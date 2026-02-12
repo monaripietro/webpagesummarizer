@@ -9,7 +9,15 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'URL is required' });
   }
 
-  const selectedModel = model || "google/gemini-2.0-flash-001"; // Fallback
+  const selectedModel = model || "google/gemini-2.0-flash-001";
+
+  // Check if API key is present
+  if (!process.env.OPENROUTER_API_KEY) {
+    console.error('OPENROUTER_API_KEY is not defined in environment variables');
+    return res.status(500).json({
+      error: 'Backend configuration error: API Key is missing. Please set OPENROUTER_API_KEY in Vercel environment variables.'
+    });
+  }
 
   try {
     // 1. Fetch the webpage content
@@ -35,7 +43,9 @@ export default async function handler(req, res) {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://websummary-demo.vercel.app", // Optional, for OpenRouter ranking
+        "X-Title": "WebSummary Educational Demo" // Optional, for OpenRouter ranking
       },
       body: JSON.stringify({
         "model": selectedModel,
