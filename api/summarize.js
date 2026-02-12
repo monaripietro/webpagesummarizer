@@ -12,11 +12,20 @@ export default async function handler(req, res) {
   const selectedModel = model || "google/gemini-2.0-flash-001";
 
   // Check if API key is present
-  if (!process.env.OPENROUTER_API_KEY) {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+
+  if (!apiKey) {
+    const hasTypo = !!(process.env.OPEN_ROUTER_API_KEY || process.env.OPENROUTER_KEY || process.env.API_KEY);
     console.error('OPENROUTER_API_KEY is not defined in environment variables');
-    return res.status(500).json({
-      error: 'Backend configuration error: API Key is missing. Please set OPENROUTER_API_KEY in Vercel environment variables.'
-    });
+
+    let errorMessage = 'Backend configuration error: API Key is missing.';
+    if (hasTypo) {
+      errorMessage += ' It looks like you might have a typo in your environment variable name. Ensure it is exactly OPENROUTER_API_KEY.';
+    } else {
+      errorMessage += ' Please set OPENROUTER_API_KEY in your Vercel Project Settings -> Environment Variables and then RE-DEPLOY the project to apply changes.';
+    }
+
+    return res.status(500).json({ error: errorMessage });
   }
 
   try {
