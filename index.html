@@ -79,7 +79,7 @@
                 <div class="arch-block">
                     <div class="arch-icon">🌐</div>
                     <div class="arch-label">2. Fetch HTML</div>
-                    <div class="arch-desc">Download del codice sorgente.</div>
+                    <div class="arch-desc">Download della pagina web.</div>
                     <div class="arch-snippet">await fetch(url)</div>
                 </div>
                 <div class="arch-arrow"><span></span></div>
@@ -94,14 +94,14 @@
                     <div class="arch-icon">📝</div>
                     <div class="arch-label">4. Prompt</div>
                     <div class="arch-desc">Unione testo e istruzioni.</div>
-                    <div class="arch-snippet">"Riassumi: " + testoSera</div>
+                    <div class="arch-snippet">"Riassumi: " + testoSito</div>
                 </div>
                 <div class="arch-arrow"><span></span></div>
                 <div class="arch-block">
                     <div class="arch-icon">🤖</div>
                     <div class="arch-label">5. Invio all'IA</div>
                     <div class="arch-desc">Richiesta all'LLM.</div>
-                    <div class="arch-snippet">model: "gemini-2.0"</div>
+                    <div class="arch-snippet">model: "gemini-3.0"</div>
                 </div>
             </div>
 
@@ -118,14 +118,20 @@
                 </div>
                 <div class="arch-detail-item">
                     <h4>3. La Pulizia (Sanitization)</h4>
-                    <p>Una pagina web è piena di "rumore": pubblicità, menu, script e layout. Usiamo espressioni
-                        regolari (Regex) per eliminare tutto ciò che non è puro testo leggibile, riducendo i dati
-                        all'essenziale.</p>
+                    <p>Una pagina web è piena di "rumore": pubblicità, menu e stili. Usiamo Regex per estrarre solo il
+                        testo leggibile. Per motivi di performance e costi, il testo viene limitato a un massimo di
+                        <strong>4000 caratteri</strong>.
+                    </p>
                 </div>
                 <div class="arch-detail-item">
                     <h4>4. La Preparazione (Prompting)</h4>
-                    <p>Il testo pulito viene inserito in una "cornice" di istruzioni. Non diciamo solo "leggi questo",
-                        ma "Analizza questo testo e scrivine un riassunto conciso ed efficace".</p>
+                    <p>Il testo pulito viene inserito in una "cornice" di istruzioni con l'obiettivo di riassumerlo. Il
+                        <strong>Prompt</strong>
+                        inviato al backend è:
+                        <br>
+                        <code
+                            class="code-block">"You are a helpful assistant that summarizes the content of a webpage provided by the user. Do not include any meta-talk, just the summary."</code>
+                    </p>
                 </div>
                 <div class="arch-detail-item">
                     <h4>5. L'IA in Azione</h4>
