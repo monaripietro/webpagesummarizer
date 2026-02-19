@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const model = modelSelect.value;
 
         if (!url) {
-            alert('Please enter a valid URL');
+            alert('Per favore inserisci un URL valido');
             return;
         }
 
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             new URL(url);
         } catch (e) {
-            alert('Please enter a valid URL (e.g., https://example.com)');
+            alert('Per favore inserisci un URL valido (es. https://esempio.it)');
             return;
         }
 
@@ -46,13 +46,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Something went wrong');
+                throw new Error(data.error || 'Si è verificato un errore');
             }
 
             summaryContent.textContent = data.summary;
             resultSection.classList.remove('hidden');
         } catch (error) {
-            alert(`Error: ${error.message}`);
+            alert(`Errore: ${error.message}`);
         } finally {
             loader.classList.add('hidden');
             summarizeBtn.disabled = false;

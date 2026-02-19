@@ -21,74 +21,39 @@
     <main class="container">
         <header>
             <h1>WebSummary</h1>
-            <p class="subtitle">Summarize any webpage with AI</p>
+            <p class="subtitle">Riassumi qualsiasi pagina web con l'IA</p>
         </header>
 
         <section class="glass-card input-section">
             <div class="model-select-wrapper">
-                <label for="model-select">Choose Model:</label>
+                <label for="model-select">Scegli il Modello:</label>
                 <select id="model-select">
-                    <option value="openrouter/free">RANDOM (Free)</option>
-                    <option value="z-ai/glm-4.5-air:free">Z-AI: GLM-4.5 Air (Free)</option>
-                    <option value="openai/gpt-oss-20b:free">OpenAI: GPT-OSS 20B (Free)</option>
-                    <option value="openai/gpt-oss-120b:free">OpenAI: GPT-OSS 120B (Free)</option>
-                    <option value="qwen/qwen3-4b:free">Qwen: Qwen 3 4B (Free)</option>
-                    <option value="google/gemma-3-4b-it:free">Google: Gemma 3 4B IT (Free)</option>
-                    <option value="google/gemma-3-27b-it:free">Google: Gemma 3 27B IT (Free)</option>
-                    <option value="nvidia/nemotron-3-nano-30b-a3b:free">Nvidia: Nemotron 3 Nano (Free)</option>
+                    <option value="openrouter/free">CASUALE (Gratis)</option>
+                    <option value="z-ai/glm-4.5-air:free">Z-AI: GLM-4.5 Air (Gratis)</option>
+                    <option value="openai/gpt-oss-20b:free">OpenAI: GPT-OSS 20B (Gratis)</option>
+                    <option value="openai/gpt-oss-120b:free">OpenAI: GPT-OSS 120B (Gratis)</option>
+                    <option value="qwen/qwen3-4b:free">Qwen: Qwen 3 4B (Gratis)</option>
+                    <option value="google/gemma-3-4b-it:free">Google: Gemma 3 4B IT (Gratis)</option>
+                    <option value="google/gemma-3-27b-it:free">Google: Gemma 3 27B IT (Gratis)</option>
+                    <option value="nvidia/nemotron-3-nano-30b-a3b:free">Nvidia: Nemotron 3 Nano (Gratis)</option>
                 </select>
             </div>
             <div class="input-group">
-                <input type="url" id="url-input" placeholder="https://example.com" required>
-                <button id="summarize-btn">Summarize</button>
+                <input type="url" id="url-input" placeholder="https://esempio.it" required>
+                <button id="summarize-btn">Riassumi</button>
             </div>
-            <p class="hint">Enter a URL to get an AI-powered summary.</p>
+            <p class="hint">Inserisci un URL per ottenere un riassunto generato dall'IA.</p>
         </section>
 
-        <section class="glass-card architecture-section">
-            <h3 class="section-title">🔍 Pipeline Tecnica (Dettaglio)</h3>
-            <div class="architecture-diagram">
-                <div class="arch-block">
-                    <div class="arch-icon">🔗</div>
-                    <div class="arch-label">1. URL</div>
-                    <div class="arch-desc">L'utente fornisce l'indirizzo della pagina.</div>
-                    <div class="arch-snippet">https://example.com</div>
-                </div>
-                <div class="arch-arrow"><span></span></div>
-                <div class="arch-block">
-                    <div class="arch-icon">🌐</div>
-                    <div class="arch-label">2. Fetch HTML</div>
-                    <div class="arch-desc">Il server scarica il codice sorgente della pagina.</div>
-                    <div class="arch-snippet">await fetch(url)</div>
-                </div>
-                <div class="arch-arrow"><span></span></div>
-                <div class="arch-block">
-                    <div class="arch-icon">🧹</div>
-                    <div class="arch-label">3. Pulizia HTML</div>
-                    <div class="arch-desc">Vengono rimossi script, stili e tag HTML.</div>
-                    <div class="arch-snippet">text.replace(/<[^>]+>/g, '')</div>
-                </div>
-                <div class="arch-arrow"><span></span></div>
-                <div class="arch-block">
-                    <div class="arch-icon">📝</div>
-                    <div class="arch-label">4. Costruzione Prompt</div>
-                    <div class="arch-desc">Il testo viene unito alle istruzioni AI.</div>
-                    <div class="arch-snippet">"Summarize: " + cleanedText</div>
-                </div>
-                <div class="arch-arrow"><span></span></div>
-                <div class="arch-block">
-                    <div class="arch-icon">🤖</div>
-                    <div class="arch-label">5. Invio all'IA</div>
-                    <div class="arch-desc">La richiesta viene spedita al modello LLM.</div>
-                    <div class="arch-snippet">model: "gemini-2.0"</div>
-                </div>
-            </div>
+        <section id="loader" class="loader hidden">
+            <div class="spinner"></div>
+            <p>Analisi del contenuto della pagina in corso...</p>
         </section>
 
         <section id="result-section" class="glass-card result-section hidden">
             <div class="result-header">
-                <h2>Summary</h2>
-                <button id="copy-btn" title="Copy to clipboard">
+                <h2>Riassunto</h2>
+                <button id="copy-btn" title="Copia negli appunti">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -97,13 +62,77 @@
                 </button>
             </div>
             <div id="summary-content" class="summary-content">
-                <!-- Summary will appear here -->
+                <!-- Il riassunto apparirà qui -->
             </div>
         </section>
 
-        <section id="loader" class="loader hidden">
-            <div class="spinner"></div>
-            <p>Analyzing webpage content...</p>
+        <section class="glass-card architecture-section">
+            <h3 class="section-title">🔍 Pipeline Tecnica (Dettaglio)</h3>
+            <div class="architecture-diagram">
+                <div class="arch-block">
+                    <div class="arch-icon">🔗</div>
+                    <div class="arch-label">1. URL</div>
+                    <div class="arch-desc">Indirizzo della pagina.</div>
+                    <div class="arch-snippet">https://esempio.it</div>
+                </div>
+                <div class="arch-arrow"><span></span></div>
+                <div class="arch-block">
+                    <div class="arch-icon">🌐</div>
+                    <div class="arch-label">2. Fetch HTML</div>
+                    <div class="arch-desc">Download del codice sorgente.</div>
+                    <div class="arch-snippet">await fetch(url)</div>
+                </div>
+                <div class="arch-arrow"><span></span></div>
+                <div class="arch-block">
+                    <div class="arch-icon">🧹</div>
+                    <div class="arch-label">3. Pulizia HTML</div>
+                    <div class="arch-desc">Rimozione tag e script.</div>
+                    <div class="arch-snippet">text.replace(/<[^>]+>/g, '')</div>
+                </div>
+                <div class="arch-arrow"><span></span></div>
+                <div class="arch-block">
+                    <div class="arch-icon">📝</div>
+                    <div class="arch-label">4. Prompt</div>
+                    <div class="arch-desc">Unione testo e istruzioni.</div>
+                    <div class="arch-snippet">"Riassumi: " + testoSera</div>
+                </div>
+                <div class="arch-arrow"><span></span></div>
+                <div class="arch-block">
+                    <div class="arch-icon">🤖</div>
+                    <div class="arch-label">5. Invio all'IA</div>
+                    <div class="arch-desc">Richiesta all'LLM.</div>
+                    <div class="arch-snippet">model: "gemini-2.0"</div>
+                </div>
+            </div>
+
+            <div class="arch-details">
+                <div class="arch-detail-item">
+                    <h4>1. L'URL di Partenza</h4>
+                    <p>Tutto inizia qui. L'utente inserisce il link (URL) che desidera analizzare. Questo indirizzo è la
+                        nostra bussola per trovare i dati sul web.</p>
+                </div>
+                <div class="arch-detail-item">
+                    <h4>2. Il Recupero (Fetch)</h4>
+                    <p>Il server agisce come un browser invisibile: va all'indirizzo indicato e scarica l'intero codice
+                        HTML. È come scattare una foto di tutto il codice che compone la pagina.</p>
+                </div>
+                <div class="arch-detail-item">
+                    <h4>3. La Pulizia (Sanitization)</h4>
+                    <p>Una pagina web è piena di "rumore": pubblicità, menu, script e layout. Usiamo espressioni
+                        regolari (Regex) per eliminare tutto ciò che non è puro testo leggibile, riducendo i dati
+                        all'essenziale.</p>
+                </div>
+                <div class="arch-detail-item">
+                    <h4>4. La Preparazione (Prompting)</h4>
+                    <p>Il testo pulito viene inserito in una "cornice" di istruzioni. Non diciamo solo "leggi questo",
+                        ma "Analizza questo testo e scrivine un riassunto conciso ed efficace".</p>
+                </div>
+                <div class="arch-detail-item">
+                    <h4>5. L'IA in Azione</h4>
+                    <p>Il pacchetto completo (istruzioni + testo) viene inviato via API a un modello di linguaggio
+                        avanzato (LLM). L'IA interpreta il contenuto e genera la risposta che vedi a schermo.</p>
+                </div>
+            </div>
         </section>
 
         <section class="glass-card educational-note">
@@ -127,7 +156,7 @@
     </main>
 
     <footer>
-        <p>Built for educational purposes • Hosted on Vercel</p>
+        <p>Realizzato per scopi formativi • Ospitato su Vercel</p>
     </footer>
 
     <script src="script.js"></script>

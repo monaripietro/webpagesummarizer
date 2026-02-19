@@ -324,6 +324,26 @@ button:active {
     margin-top: auto;
 }
 
+.arch-details {
+    margin-top: 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    text-align: left;
+}
+
+.arch-detail-item h4 {
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+.arch-detail-item p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
 .loader {
     display: flex;
     flex-direction: column;
