@@ -44,8 +44,15 @@ export default async function handler(req, res) {
       .replace(/\s+/g, ' ')
       .trim();
 
+    if (!textContent || textContent.length < 50) {
+      throw new Error("The webpage doesn't seem to contain enough readable text to summarize.");
+    }
+
     // Limit content length for the demo
-    textContent = textContent.substring(0, 4000);
+    const MAX_LENGTH = 4000;
+    if (textContent.length > MAX_LENGTH) {
+      textContent = textContent.substring(0, MAX_LENGTH) + "... (truncated for demo)";
+    }
 
     // 3. Call OpenRouter API
     const openRouterResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -72,14 +79,38 @@ export default async function handler(req, res) {
     });
 
     if (!openRouterResponse.ok) {
-      const errorData = await openRouterResponse.json();
-      throw new Error(`OpenRouter Error: ${errorData.error?.message || openRouterResponse.statusText}`);
+      let errorMessage = openRouterResponse.statusText;
+      try {
+        const errorData = await openRouterResponse.json();
+        errorMessage = errorData.error?.message || errorMessage;
+      } catch (e) {
+        // Fallback to status text if JSON parsing fails
+      }
+      throw new Error(`OpenRouter Error: ${errorMessage}`);
     }
 
     const data = await openRouterResponse.json();
     const summary = data.choices[0].message.content;
 
-    return res.status(200).json({ summary });
+    // Construct the messages array to show the user what was sent
+    const fullPrompt = [
+      {
+        "role": "system",
+        "content": "You are a helpful assistant that summarizes the content of a webpage provided by the user. Do not include any meta-talk, just the summary."
+      },
+      {
+        "role": "user",
+        "content": `Please summarize the following webpage content: \n\n ${textContent}`
+      }
+    ];
+
+    return res.status(200).json({
+      summary,
+      debug: {
+        extractedContent: textContent,
+        fullPrompt: fullPrompt
+      }
+    });
 
   } catch (error) {
     console.error('Error in summarize API:', error);

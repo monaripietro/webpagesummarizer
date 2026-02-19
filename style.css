@@ -232,6 +232,98 @@ button:active {
     line-height: 1.6;
 }
 
+/* Architecture Diagram */
+.section-title {
+    color: #818cf8;
+    margin-bottom: 2rem;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.architecture-diagram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem 0;
+}
+
+.arch-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.6rem;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 1rem 0.5rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: transform 0.3s ease;
+    min-width: 0;
+}
+
+.arch-block:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.arch-icon {
+    font-size: 2.5rem;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: 18px;
+    margin-bottom: 0.5rem;
+}
+
+.arch-label {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-main);
+}
+
+.arch-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.arch-arrow {
+    flex-shrink: 0;
+    width: 20px;
+    height: 2px;
+    background: var(--glass-border);
+    position: relative;
+}
+
+.arch-arrow::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 6px solid transparent;
+    border-left-color: var(--glass-border);
+}
+
+.arch-snippet {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.7rem;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
+    color: #a5b4fc;
+    width: 100%;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-top: auto;
+}
+
 .loader {
     display: flex;
     flex-direction: column;
@@ -280,5 +372,25 @@ footer {
 
     h1 {
         font-size: 2.5rem;
+    }
+
+    .architecture-diagram {
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .arch-arrow {
+        width: 2px;
+        height: 30px;
+        transform: none;
+    }
+
+    .arch-arrow::after {
+        right: 50%;
+        bottom: 0;
+        top: auto;
+        transform: translateX(50%);
+        border: 6px solid transparent;
+        border-top-color: var(--glass-border);
     }
 }

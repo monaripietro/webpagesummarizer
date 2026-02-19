@@ -8,11 +8,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const copyBtn = document.getElementById('copy-btn');
 
     summarizeBtn.addEventListener('click', async () => {
-        const url = urlInput.value.trim();
+        let url = urlInput.value.trim();
         const model = modelSelect.value;
 
         if (!url) {
             alert('Please enter a valid URL');
+            return;
+        }
+
+        // Add https:// if missing
+        if (!/^https?:\/\//i.test(url)) {
+            url = 'https://' + url;
+            urlInput.value = url; // Update input field to show the user
+        }
+
+        try {
+            new URL(url);
+        } catch (e) {
+            alert('Please enter a valid URL (e.g., https://example.com)');
             return;
         }
 
