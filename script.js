@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultSection = document.getElementById('result-section');
     const summaryContent = document.getElementById('summary-content');
     const summaryModel = document.getElementById('summary-model');
+    const defendedContent = document.getElementById('defended-content');
     const loader = document.getElementById('loader');
     const copyBtn = document.getElementById('copy-btn');
     const loaderStep = document.getElementById('loader-step');
@@ -13,81 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const errorHint = document.getElementById('error-hint');
     const introModal = document.getElementById('intro-modal');
     const introBtn = document.getElementById('intro-btn');
-
-    // --- Modello locale (gira nel browser, via WebLLM) ---
-    // Scaricarlo è sempre una scelta esplicita dell'utente: pesa 276 MB e su
-    // macchine poco potenti è meglio non farlo partire da soli.
-    const LOCAL_MODEL_ID = 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC';
-    const localBtn = document.getElementById('local-btn');
-    const localStatus = document.getElementById('local-status');
-    const introLocalBtn = document.getElementById('intro-local-btn');
-    const introLocalStatus = document.getElementById('intro-local-status');
-    const localColumn = document.getElementById('local-column');
-    const localContent = document.getElementById('local-content');
-    const localModelLabel = document.getElementById('local-model-label');
-
-    let localEngine = null;
-    let localLoading = null;
-
-    // I due punti di accesso (pop-up e pagina) mostrano sempre lo stesso stato.
-    function setLocalStatus(text) {
-        localStatus.textContent = text;
-        introLocalStatus.textContent = text;
-    }
-
-    function setLocalButtons(disabled, label) {
-        [localBtn, introLocalBtn].forEach((btn) => {
-            btn.disabled = disabled;
-            if (label) {
-                btn.textContent = label;
-            }
-        });
-    }
-
-    async function loadLocalModel() {
-        if (localEngine) {
-            return localEngine;
-        }
-        if (localLoading) {
-            return localLoading;
-        }
-
-        localLoading = (async () => {
-            if (!navigator.gpu) {
-                throw new Error('Questo browser non supporta WebGPU: servono Chrome o Edge aggiornati.');
-            }
-            const webllm = await import('https://esm.run/@mlc-ai/web-llm');
-            const engine = await webllm.CreateMLCEngine(LOCAL_MODEL_ID, {
-                initProgressCallback: (report) => setLocalStatus(report.text)
-            });
-            localEngine = engine;
-            return engine;
-        })();
-
-        try {
-            const engine = await localLoading;
-            setLocalStatus('Modello locale pronto: il prossimo riassunto mostrerà il confronto.');
-            setLocalButtons(true, 'Modello locale attivo');
-            localModelLabel.textContent = `Generato da: ${LOCAL_MODEL_ID}`;
-            return engine;
-        } catch (error) {
-            setLocalStatus(`Non è stato possibile caricare il modello locale: ${error.message}`);
-            setLocalButtons(false, 'Riprova a scaricare il modello locale');
-            throw error;
-        } finally {
-            localLoading = null;
-        }
-    }
-
-    function startLocalDownload() {
-        setLocalButtons(true, 'Scaricamento in corso...');
-        loadLocalModel().catch(() => {
-            // il messaggio di errore è già stato mostrato da loadLocalModel
-        });
-    }
-
-    localBtn.addEventListener('click', startLocalDownload);
-    introLocalBtn.addEventListener('click', startLocalDownload);
 
     function closeIntro() {
         introModal.classList.add('hidden');
@@ -107,8 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const PHASES = [
         '🌐 Scarico la pagina web...',
         '🧹 Ripulisco l\'HTML ed estraggo il testo leggibile...',
-        '📝 Preparo il prompt da inviare al modello...',
-        '🤖 Il modello sta leggendo e scrivendo il riassunto...'
+        '🔓 Primo giro: riassunto con il prompt ingenuo...',
+        '🔒 Secondo giro: stesso modello, prompt blindato...'
     ];
     const SECONDS_PER_PHASE = 3;
     const SLOW_AFTER_SECONDS = 20;
@@ -149,7 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let url = urlInput.value.trim();
         // Router di OpenRouter: sceglie da solo un modello gratuito disponibile.
         const model = 'openrouter/free';
-        let promptDaConfrontare = null;
 
         if (!url) {
             showError('Inserisci l\'indirizzo di una pagina web da riassumere.', false);
@@ -194,11 +119,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             summaryModel.textContent = `Generato da: ${data.model}`;
-            summaryContent.textContent = data.summary;
+            summaryContent.textContent = data.naive;
+            // La seconda chiamata può fallire per conto suo: in quel caso mostriamo
+            // il motivo nella colonna, senza far saltare tutto il riassunto.
+            defendedContent.textContent = data.defended
+                || `Questa metà del confronto non è arrivata: ${data.defendedError}`;
             resultSection.classList.remove('hidden');
-
-            // Il confronto parte solo se l'utente ha scaricato il modello locale.
-            promptDaConfrontare = localEngine ? data.debug.fullPrompt : null;
         } catch (error) {
             showError(error.message, error.isModelError === true);
         } finally {
@@ -206,34 +132,13 @@ document.addEventListener('DOMContentLoaded', () => {
             loader.classList.add('hidden');
             summarizeBtn.disabled = false;
         }
-
-        if (promptDaConfrontare) {
-            await runLocalComparison(promptDaConfrontare);
-        }
     });
 
-    // Riceve lo stesso identico array di messaggi che il backend ha spedito al
-    // modello remoto: se i due prompt differissero, il confronto non direbbe nulla.
-    async function runLocalComparison(messages) {
-        localColumn.classList.remove('hidden');
-        localContent.textContent = 'Elaborazione in corso nel tuo browser...';
-        try {
-            // Senza questi due limiti il modello piccolo continua a generare oltre la
-            // risposta e la impasta, rendendo illeggibile l'esito dell'injection.
-            // temperature 0 lo rende anche ripetibile davanti a una classe.
-            const reply = await localEngine.chat.completions.create({
-                messages,
-                max_tokens: 120,
-                temperature: 0
-            });
-            localContent.textContent = reply.choices[0].message.content;
-        } catch (error) {
-            localContent.textContent = `Il modello locale non è riuscito a rispondere: ${error.message}`;
-        }
-    }
 
     copyBtn.addEventListener('click', () => {
-        const text = summaryContent.textContent;
+        const text = `${summaryModel.textContent}\n\n`
+            + `--- PROMPT INGENUO ---\n${summaryContent.textContent}\n\n`
+            + `--- PROMPT BLINDATO ---\n${defendedContent.textContent}`;
         navigator.clipboard.writeText(text).then(() => {
             const originalIcon = copyBtn.innerHTML;
             copyBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';

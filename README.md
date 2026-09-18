@@ -6,7 +6,7 @@ WebSummary is a lightweight, portable web application designed to demonstrate th
 
 - **No model picking**: the app always asks `openrouter/free`, OpenRouter's own router, which selects a free model that is actually up. The answer reports **which model really replied**, so nothing is hidden.
 - **Welcome Screen**: A short intro explains the prompt-injection lesson before you start.
-- **Local Model Comparison**: Optionally download a small model (`Qwen2.5-0.5B-Instruct`, 276 MB) that runs **in the browser** via WebLLM/WebGPU, and see it answer the *same prompt* side by side with the remote model. The small one gets hijacked by injected instructions; the large one usually doesn't. The download is never automatic — it is offered in the welcome pop-up and again on the page, so low-powered machines can skip it.
+- **Naive vs Defended**: every page is summarized **twice by the same model** — once with a naive prompt that pastes the page straight into the user message, once with a prompt that wraps it in explicit delimiters and declares it untrusted. The two answers are shown side by side, which is the whole lesson in one screen.
 - **Glassmorphism UI**: A modern, premium aesthetic built with vanilla HTML, CSS, and JS.
 - **Serverless Backend**: Powered by Vercel Serverless Functions for secure API key handling.
 - **Educational Note**: Includes a built-in explanation of how prompt injection works in the context of web scraping.

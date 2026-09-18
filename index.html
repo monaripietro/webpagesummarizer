@@ -32,24 +32,10 @@
                 Si chiama <strong>prompt injection indiretta</strong>.
             </p>
             <p class="modal-note">
-                Nel frattempo stiamo chiedendo a OpenRouter quali modelli gratuiti stanno
-                davvero rispondendo in questo momento: quelli spenti non te li proponiamo nemmeno.
+                Per ogni pagina chiediamo <strong>due volte</strong> lo stesso riassunto allo stesso
+                modello: una con un prompt ingenuo, una con un prompt che separa esplicitamente le
+                istruzioni dai dati. Vedrai le due risposte affiancate.
             </p>
-
-            <div class="local-offer">
-                <p class="local-offer-title">Vuoi vedere il confronto?</p>
-                <p>
-                    Puoi scaricare un modello piccolo che gira <strong>dentro il tuo browser</strong>
-                    e metterlo a confronto con quelli remoti sullo stesso testo. Il download è di circa
-                    <strong>276 MB</strong> e resta in cache per le volte successive.
-                </p>
-                <p class="local-offer-warning">
-                    Non è obbligatorio, e su computer poco potenti conviene saltarlo: puoi scaricarlo
-                    più tardi dalla pagina, quando vuoi.
-                </p>
-                <button id="intro-local-btn" class="secondary-btn">Scarica il modello locale</button>
-                <p id="intro-local-status" class="local-status"></p>
-            </div>
 
             <button id="intro-btn">Ho capito, provo</button>
         </div>
@@ -83,9 +69,8 @@
             <h3 class="error-title">⚠️ Non è stato possibile creare il riassunto</h3>
             <p id="error-message" class="error-message"></p>
             <p id="error-hint" class="error-hint hidden">
-                Il modello selezionato al momento non risponde: è normale con i modelli gratuiti.
-                Prova a sceglierne un altro dal menu, oppure usa l'opzione <strong>CASUALE</strong>,
-                che lascia a OpenRouter il compito di trovarne uno disponibile.
+                Nessun modello gratuito ha risposto in questo momento: capita, perché sono molto
+                richiesti. Riprova fra qualche istante.
             </p>
         </section>
 
@@ -100,39 +85,25 @@
                     </svg>
                 </button>
             </div>
+            <p id="summary-model" class="summary-model"></p>
+            <p class="results-caption">
+                Stesso modello, stesso testo, stessa richiesta. Cambia solo come il prompt
+                separa le istruzioni dai dati.
+            </p>
             <div class="results-grid">
                 <div class="result-column">
-                    <h4 class="column-title">☁️ Modello remoto</h4>
-                    <p id="summary-model" class="summary-model"></p>
-                    <div id="summary-content" class="summary-content">
-                        <!-- Il riassunto apparirà qui -->
-                    </div>
+                    <h4 class="column-title">🔓 Prompt ingenuo</h4>
+                    <p class="column-note">Il testo della pagina è incollato nel messaggio senza alcuna separazione.</p>
+                    <div id="summary-content" class="summary-content"></div>
                 </div>
-                <div id="local-column" class="result-column hidden">
-                    <h4 class="column-title">💻 Modello locale</h4>
-                    <p id="local-model-label" class="summary-model"></p>
-                    <div id="local-content" class="summary-content"></div>
+                <div class="result-column">
+                    <h4 class="column-title">🔒 Prompt blindato</h4>
+                    <p class="column-note">Il testo è racchiuso fra delimitatori e dichiarato non fidato.</p>
+                    <div id="defended-content" class="summary-content"></div>
                 </div>
             </div>
         </section>
 
-        <section class="glass-card local-section">
-            <h3 class="section-title">💻 Confronto con un modello nel tuo browser</h3>
-            <p class="local-intro">
-                I modelli remoti più grandi sono addestrati a riconoscere le istruzioni nascoste nelle
-                pagine web e a ignorarle. Un modello piccolo, che gira direttamente nel tuo browser,
-                è molto meno attrezzato: dandogli <strong>lo stesso identico prompt</strong> puoi vedere
-                i due comportamenti affiancati.
-            </p>
-            <p class="local-intro">
-                Il modello è <code>Qwen2.5-0.5B-Instruct</code>: <strong>276 MB</strong> da scaricare una
-                volta sola, poi resta nella cache del browser. Serve una GPU via WebGPU (Chrome o Edge
-                aggiornati). Su computer poco potenti puoi tranquillamente non scaricarlo: l'app
-                funziona lo stesso.
-            </p>
-            <button id="local-btn" class="secondary-btn">Scarica e attiva il modello locale</button>
-            <p id="local-status" class="local-status"></p>
-        </section>
 
         <section class="glass-card architecture-section">
             <h3 class="section-title">🔍 Pipeline Tecnica (Dettaglio)</h3>
