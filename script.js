@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const summarizeBtn = document.getElementById('summarize-btn');
     const resultSection = document.getElementById('result-section');
     const summaryContent = document.getElementById('summary-content');
+    const summaryModel = document.getElementById('summary-model');
     const loader = document.getElementById('loader');
     const copyBtn = document.getElementById('copy-btn');
     const modelStatus = document.getElementById('model-status');
@@ -12,9 +13,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const errorSection = document.getElementById('error-section');
     const errorMessage = document.getElementById('error-message');
     const errorHint = document.getElementById('error-hint');
+    const introModal = document.getElementById('intro-modal');
+    const introStatus = document.getElementById('intro-status');
+    const introSpinner = document.getElementById('intro-spinner');
+    const introBtn = document.getElementById('intro-btn');
 
-    // Chiede al backend quali modelli gratuiti sono disponibili ora su OpenRouter
-    // e li aggiunge al menu a tendina.
+    // Sblocca il pulsante del pop-up. Viene chiamata sia in caso di successo
+    // sia in caso di errore: l'utente non deve mai restare bloccato fuori dall'app.
+    function unlockIntro(message) {
+        introStatus.textContent = message;
+        introSpinner.classList.add('hidden');
+        introBtn.disabled = false;
+    }
+
+    function closeIntro() {
+        if (introBtn.disabled) {
+            return;
+        }
+        introModal.classList.add('hidden');
+    }
+
+    introBtn.addEventListener('click', closeIntro);
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            closeIntro();
+        }
+    });
+
+    // Chiede al backend quali modelli gratuiti stanno rispondendo ora e li
+    // aggiunge al menu a tendina. Il backend ha già scartato quelli irraggiungibili.
     async function loadFreeModels() {
         try {
             const response = await fetch('/api/models');
@@ -31,10 +58,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 modelSelect.appendChild(option);
             });
 
-            modelStatus.textContent = `${data.models.length} modelli gratuiti disponibili.`;
+            const riepilogo = `${data.models.length} modelli gratuiti attivi`
+                + (data.discarded ? ` (${data.discarded} scartati perché non raggiungibili)` : '');
+
+            modelStatus.textContent = `${riepilogo}.`;
+            unlockIntro(`Pronto: ${riepilogo}.`);
         } catch (error) {
             // Se la lista non arriva, l'opzione "CASUALE" resta comunque utilizzabile.
-            modelStatus.textContent = 'Lista modelli non disponibile: puoi usare l\'opzione CASUALE.';
+            const fallback = 'Lista modelli non disponibile: puoi usare l\'opzione CASUALE.';
+            modelStatus.textContent = fallback;
+            unlockIntro(fallback);
         }
     }
 
@@ -131,6 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw requestError;
             }
 
+            summaryModel.textContent = `Generato da: ${data.model}`;
             summaryContent.textContent = data.summary;
             resultSection.classList.remove('hidden');
         } catch (error) {

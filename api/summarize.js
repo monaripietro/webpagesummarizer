@@ -121,6 +121,9 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       summary,
+      // Con "openrouter/free" il modello lo sceglie OpenRouter: questo campo dice
+      // quale ha risposto davvero. Se mancasse, ripieghiamo su quello richiesto.
+      model: data.model || selectedModel,
       debug: {
         extractedContent: textContent,
         fullPrompt: fullPrompt

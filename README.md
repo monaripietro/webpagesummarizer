@@ -4,7 +4,8 @@ WebSummary is a lightweight, portable web application designed to demonstrate th
 
 ## 🚀 Features
 
-- **Multi-Model Support**: The free-model list is fetched live from OpenRouter, so the dropdown never offers models that no longer exist. A `CASUALE` option (`openrouter/free`) lets OpenRouter pick an available free model for you.
+- **Multi-Model Support**: The free-model list is fetched live from OpenRouter and **health-checked** — models with no provider serving them are dropped before they reach the dropdown, so you don't pick one that can't answer. A `CASUALE` option (`openrouter/free`) lets OpenRouter pick an available free model for you.
+- **Welcome Screen**: A short intro explains the prompt-injection lesson while the health check runs; the "Ho capito, provo" button unlocks when the models are ready.
 - **Glassmorphism UI**: A modern, premium aesthetic built with vanilla HTML, CSS, and JS.
 - **Serverless Backend**: Powered by Vercel Serverless Functions for secure API key handling.
 - **Educational Note**: Includes a built-in explanation of how prompt injection works in the context of web scraping.

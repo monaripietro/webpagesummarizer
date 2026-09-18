@@ -44,7 +44,8 @@ This file listens for clicks. When you press "Summarize":
     "cleaning the HTML", ...) plus a real seconds counter, so the wait doesn't feel frozen.
     The backend answers in one shot, so those step timings are indicative — the counter is not.
 3.  It sends a "request" to our backend with the URL you typed.
-4.  Once the backend replies, it puts the result on the screen.
+4.  Once the backend replies, it puts the result on the screen, with a small label saying which
+    model actually wrote it — useful with `CASUALE`, where OpenRouter picks the model for you.
 
 If something goes wrong, the message appears in a card on the page instead of a browser
 pop-up. When the problem is the **model** (free models often go offline or hit their rate
@@ -69,11 +70,23 @@ The list of *free* models on OpenRouter changes often: models appear, disappear,
 responding. Writing that list by hand inside `index.html` means the app slowly fills up with
 dead options.
 
+Worse: being *listed* as free doesn't mean a model actually answers. Many free models have
+**no provider serving them** — pick one and you get "No endpoints found".
+
 So instead we **ask OpenRouter directly**:
 1.  It calls `https://openrouter.ai/api/v1/models` (a public endpoint — no API key needed).
 2.  It keeps only the free ones (their `id` ends with `:free`).
-3.  It remembers the answer for 1 hour (a **cache**), so we don't re-ask on every page load.
-4.  `script.js` uses that list to fill the dropdown when the page opens.
+3.  For each one, it asks `/api/v1/models/<model>/endpoints`: who is actually serving it right
+    now? Each provider reports a `status` (negative = in trouble) and an `uptime`. A model with
+    zero healthy providers gets dropped before the user can ever select it.
+4.  It sorts what's left by how many healthy providers it has, so the sturdiest models come first.
+5.  It remembers the answer for 1 hour (a **cache**), so we don't re-ask on every page load.
+6.  `script.js` uses that list to fill the dropdown when the page opens.
+
+Two things worth noticing about step 3. First, those are **metadata** calls: they cost no tokens
+and don't eat into your free daily quota, unlike actually sending a test prompt to 22 models.
+Second, the checks run with `Promise.all`, all at once — so the whole scan takes as long as the
+single slowest check (a fraction of a second), not the sum of all of them.
 
 The dropdown also keeps one fixed option, `openrouter/free`. That is OpenRouter's own
 "router": it picks an available free model for you. It is the safety net — if the model list
