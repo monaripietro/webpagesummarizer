@@ -11,6 +11,30 @@ const CACHE_DURATION = 60 * 60 * 1000; // 1 ora
 const CHECK_TIMEOUT = 5000; // ms concessi al singolo controllo
 const MIN_UPTIME = 50; // % minima di richieste andate a buon fine nell'ultima mezz'ora
 
+// Non basta che un modello risponda: deve anche saper riassumere un testo.
+// Nel catalogo gratuito ci sono modelli nati per tutt'altro (classificatori di
+// sicurezza, agenti di programmazione, modelli medici o finanziari): rispondono
+// senza errori ma producono output inadatti al riassunto.
+const NOME_SPECIALIZZATO = /\b(code|coding|content safety|guard|moderation|embedding|rerank)\b/i;
+
+// Qui la parola chiave deve essere attaccata a "model"/"classifier" nella
+// descrizione che il modello dà di sé. Una regola più larga scarterebbe anche
+// i modelli generalisti che si limitano a citare la programmazione tra i loro punti forti.
+const DESCRIZIONE_SPECIALIZZATA =
+  /\b(coding agent|code|content safety|moderation|guard|health|medicine|medical|finance|financial)[\w\s,-]{0,50}\b(model|classifier)\b/i;
+
+function isAdatto(model) {
+  // I modelli a ragionamento obbligatorio spesso restituiscono il testo nel campo
+  // del ragionamento, lasciando vuoto "message.content".
+  if (model.reasoning?.mandatory === true) {
+    return false;
+  }
+  if (NOME_SPECIALIZZATO.test(model.name)) {
+    return false;
+  }
+  return !DESCRIZIONE_SPECIALIZZATA.test((model.description || '').slice(0, 220));
+}
+
 // Un provider è considerato sano se OpenRouter non lo segnala in errore
 // (status negativo) e se non sta fallendo la maggior parte delle richieste.
 // uptime null significa "troppo poco traffico per saperlo": non lo penalizziamo.
@@ -64,7 +88,7 @@ export default async function handler(req, res) {
 
     // Su OpenRouter i modelli gratuiti hanno l'id che finisce con ":free".
     const freeModels = data.data.filter(
-      (model) => model.id.endsWith(':free') && model.links?.details
+      (model) => model.id.endsWith(':free') && model.links?.details && isAdatto(model)
     );
 
     // I controlli partono tutti insieme, non uno dopo l'altro: così l'attesa

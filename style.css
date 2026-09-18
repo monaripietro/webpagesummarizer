@@ -313,6 +313,81 @@ button:active {
     margin-bottom: 1.5rem;
 }
 
+.results-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+.results-grid:has(.result-column:not(.hidden) ~ .result-column:not(.hidden)) {
+    grid-template-columns: 1fr 1fr;
+}
+
+.result-column.hidden {
+    display: none;
+}
+
+.column-title {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.secondary-btn {
+    background: transparent;
+    border: 1px solid var(--primary);
+    color: #c7d2fe;
+}
+
+.secondary-btn:hover {
+    background: rgba(99, 102, 241, 0.15);
+}
+
+.secondary-btn:disabled {
+    border-color: var(--glass-border);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    background: transparent;
+}
+
+.local-offer {
+    padding: 1rem;
+    border: 1px dashed var(--glass-border);
+    border-radius: 12px;
+}
+
+.local-offer-title {
+    color: var(--text-main) !important;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.local-offer-warning {
+    font-size: 0.85rem;
+    margin: 0.6rem 0 1rem;
+}
+
+.local-status {
+    margin-top: 0.8rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.local-intro {
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+}
+
+.local-intro code {
+    font-size: 0.85rem;
+    color: #a5b4fc;
+}
+
 .summary-model {
     font-family: 'Courier New', Courier, monospace;
     font-size: 0.8rem;
@@ -534,6 +609,10 @@ footer {
     .architecture-diagram {
         flex-direction: column;
         gap: 2rem;
+    }
+
+    .results-grid:has(.result-column:not(.hidden) ~ .result-column:not(.hidden)) {
+        grid-template-columns: 1fr;
     }
 
     .arch-arrow {

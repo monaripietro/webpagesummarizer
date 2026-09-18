@@ -18,6 +18,81 @@ document.addEventListener('DOMContentLoaded', () => {
     const introSpinner = document.getElementById('intro-spinner');
     const introBtn = document.getElementById('intro-btn');
 
+    // --- Modello locale (gira nel browser, via WebLLM) ---
+    // Scaricarlo è sempre una scelta esplicita dell'utente: pesa 276 MB e su
+    // macchine poco potenti è meglio non farlo partire da soli.
+    const LOCAL_MODEL_ID = 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC';
+    const localBtn = document.getElementById('local-btn');
+    const localStatus = document.getElementById('local-status');
+    const introLocalBtn = document.getElementById('intro-local-btn');
+    const introLocalStatus = document.getElementById('intro-local-status');
+    const localColumn = document.getElementById('local-column');
+    const localContent = document.getElementById('local-content');
+    const localModelLabel = document.getElementById('local-model-label');
+
+    let localEngine = null;
+    let localLoading = null;
+
+    // I due punti di accesso (pop-up e pagina) mostrano sempre lo stesso stato.
+    function setLocalStatus(text) {
+        localStatus.textContent = text;
+        introLocalStatus.textContent = text;
+    }
+
+    function setLocalButtons(disabled, label) {
+        [localBtn, introLocalBtn].forEach((btn) => {
+            btn.disabled = disabled;
+            if (label) {
+                btn.textContent = label;
+            }
+        });
+    }
+
+    async function loadLocalModel() {
+        if (localEngine) {
+            return localEngine;
+        }
+        if (localLoading) {
+            return localLoading;
+        }
+
+        localLoading = (async () => {
+            if (!navigator.gpu) {
+                throw new Error('Questo browser non supporta WebGPU: servono Chrome o Edge aggiornati.');
+            }
+            const webllm = await import('https://esm.run/@mlc-ai/web-llm');
+            const engine = await webllm.CreateMLCEngine(LOCAL_MODEL_ID, {
+                initProgressCallback: (report) => setLocalStatus(report.text)
+            });
+            localEngine = engine;
+            return engine;
+        })();
+
+        try {
+            const engine = await localLoading;
+            setLocalStatus('Modello locale pronto: il prossimo riassunto mostrerà il confronto.');
+            setLocalButtons(true, 'Modello locale attivo');
+            localModelLabel.textContent = `Generato da: ${LOCAL_MODEL_ID}`;
+            return engine;
+        } catch (error) {
+            setLocalStatus(`Non è stato possibile caricare il modello locale: ${error.message}`);
+            setLocalButtons(false, 'Riprova a scaricare il modello locale');
+            throw error;
+        } finally {
+            localLoading = null;
+        }
+    }
+
+    function startLocalDownload() {
+        setLocalButtons(true, 'Scaricamento in corso...');
+        loadLocalModel().catch(() => {
+            // il messaggio di errore è già stato mostrato da loadLocalModel
+        });
+    }
+
+    localBtn.addEventListener('click', startLocalDownload);
+    introLocalBtn.addEventListener('click', startLocalDownload);
+
     // Sblocca il pulsante del pop-up. Viene chiamata sia in caso di successo
     // sia in caso di errore: l'utente non deve mai restare bloccato fuori dall'app.
     function unlockIntro(message) {
@@ -121,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
     summarizeBtn.addEventListener('click', async () => {
         let url = urlInput.value.trim();
         const model = modelSelect.value;
+        let promptDaConfrontare = null;
 
         if (!url) {
             showError('Inserisci l\'indirizzo di una pagina web da riassumere.', false);
@@ -167,6 +243,9 @@ document.addEventListener('DOMContentLoaded', () => {
             summaryModel.textContent = `Generato da: ${data.model}`;
             summaryContent.textContent = data.summary;
             resultSection.classList.remove('hidden');
+
+            // Il confronto parte solo se l'utente ha scaricato il modello locale.
+            promptDaConfrontare = localEngine ? data.debug.fullPrompt : null;
         } catch (error) {
             showError(error.message, error.isModelError === true);
         } finally {
@@ -174,7 +253,24 @@ document.addEventListener('DOMContentLoaded', () => {
             loader.classList.add('hidden');
             summarizeBtn.disabled = false;
         }
+
+        if (promptDaConfrontare) {
+            await runLocalComparison(promptDaConfrontare);
+        }
     });
+
+    // Riceve lo stesso identico array di messaggi che il backend ha spedito al
+    // modello remoto: se i due prompt differissero, il confronto non direbbe nulla.
+    async function runLocalComparison(messages) {
+        localColumn.classList.remove('hidden');
+        localContent.textContent = 'Elaborazione in corso nel tuo browser...';
+        try {
+            const reply = await localEngine.chat.completions.create({ messages });
+            localContent.textContent = reply.choices[0].message.content;
+        } catch (error) {
+            localContent.textContent = `Il modello locale non è riuscito a rispondere: ${error.message}`;
+        }
+    }
 
     copyBtn.addEventListener('click', () => {
         const text = summaryContent.textContent;

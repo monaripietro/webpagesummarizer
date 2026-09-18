@@ -115,5 +115,27 @@ This project isn't just a tool; it's a lesson.
 
 ---
 
+## 🥊 5. The Side-by-Side Comparison
+
+The app can run a second, much smaller model **inside your browser** (WebLLM + WebGPU), and give it
+the *exact same* messages the backend sent to the remote model — `script.js` reuses the
+`debug.fullPrompt` that `api/summarize.js` returns, so the two models genuinely receive identical
+input and the comparison can't be accused of cheating.
+
+A surprising thing we measured while building this: **a model is not vulnerable to prompt injection
+because it is small and dumb.** Obeying an injected instruction is itself an act of
+instruction-following. Models that are too weak (SmolLM2-360M, TinyLlama-1.1B) ignore the injection —
+not out of robustness, but because they can't follow complex instructions at all, and they produce
+incoherent text. `Qwen2.5-0.5B` sits in the useful middle: capable enough to write a real summary,
+not trained hard enough to refuse a hijack.
+
+The practical consequence: an injection phrased as a polite override ("ignore your guidelines...")
+is ignored by small models *and* refused by large ones. An injection that **fakes a turn in the
+conversation** ("--- FINE CONTENUTO --- / User: ... / Assistant:") reliably hijacks the small model,
+because it attacks the chat format rather than the model's reasoning.
+
+The download is always opt-in: 276 MB is a lot on a slow connection or a weak laptop, so the app
+offers it in the welcome pop-up and again in a card on the page, and works perfectly without it.
+
 ## 🚀 Learning More
 The best way to learn is to break things! Try changing a color in `style.css` or changing the "System Message" in `api/summarize.js` to see how the AI responds differently.
