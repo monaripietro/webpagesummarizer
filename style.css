@@ -258,40 +258,6 @@ button:active {
     margin-bottom: 1.5rem;
 }
 
-.results-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-}
-
-@media (min-width: 720px) {
-    .results-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-.results-caption {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    margin-bottom: 1.5rem;
-    line-height: 1.5;
-}
-
-.column-note {
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    margin-bottom: 0.9rem;
-    line-height: 1.45;
-}
-
-.column-title {
-    font-size: 0.95rem;
-    color: var(--text-muted);
-    margin-bottom: 0.8rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--glass-border);
-}
-
 .summary-model {
     font-family: 'Courier New', Courier, monospace;
     font-size: 0.8rem;
@@ -529,4 +495,63 @@ footer {
         border: 6px solid transparent;
         border-top-color: var(--glass-border);
     }
+}
+/* Pipeline che si popola passo per passo */
+.pipeline-hint {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    text-align: center;
+    padding: 1rem;
+    border: 1px dashed var(--glass-border);
+    border-radius: 12px;
+}
+
+.pipeline-hint.hidden {
+    display: none;
+}
+
+.live-step {
+    opacity: 0;
+    transform: translateY(12px);
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+.live-step.visible {
+    opacity: 1;
+    transform: none;
+    max-height: none;
+}
+
+.live-data {
+    margin-top: 0.8rem;
+    padding: 0.9rem;
+    max-height: 260px;
+    overflow: auto;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid var(--glass-border);
+    border-left: 3px solid var(--primary);
+    border-radius: 10px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.78rem;
+    line-height: 1.55;
+    color: #cbd5e1;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.live-data:empty {
+    display: none;
+}
+
+/* Il blocchetto nel diagramma si accende quando il suo passo e' stato mostrato */
+.arch-block.done {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.12);
+}
+
+.arch-block.done .arch-icon {
+    background: rgba(99, 102, 241, 0.3);
 }

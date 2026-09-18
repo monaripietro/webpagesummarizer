@@ -86,22 +86,7 @@
                 </button>
             </div>
             <p id="summary-model" class="summary-model"></p>
-            <p class="results-caption">
-                Stesso modello, stesso testo, stessa richiesta. Cambia solo come il prompt
-                separa le istruzioni dai dati.
-            </p>
-            <div class="results-grid">
-                <div class="result-column">
-                    <h4 class="column-title">🔓 Prompt ingenuo</h4>
-                    <p class="column-note">Il testo della pagina è incollato nel messaggio senza alcuna separazione.</p>
-                    <div id="summary-content" class="summary-content"></div>
-                </div>
-                <div class="result-column">
-                    <h4 class="column-title">🔒 Prompt blindato</h4>
-                    <p class="column-note">Il testo è racchiuso fra delimitatori e dichiarato non fidato.</p>
-                    <div id="defended-content" class="summary-content"></div>
-                </div>
-            </div>
+            <div id="summary-content" class="summary-content"></div>
         </section>
 
 
@@ -140,43 +125,48 @@
                     <div class="arch-icon">🤖</div>
                     <div class="arch-label">5. Invio all'IA</div>
                     <div class="arch-desc">Richiesta all'LLM.</div>
-                    <div class="arch-snippet">model: "gemini-3.0"</div>
+                    <div class="arch-snippet">model: "openrouter/free"</div>
                 </div>
             </div>
 
-            <div class="arch-details">
-                <div class="arch-detail-item">
+            <p class="pipeline-hint" id="pipeline-hint">
+                Premi <strong>Riassumi</strong>: qui sotto compariranno, passo per passo, i dati veri
+                di ogni fase — l'HTML scaricato, il testo estratto, il prompt esatto inviato all'IA.
+            </p>
+
+            <div class="arch-details" id="pipeline-live">
+                <article class="arch-detail-item live-step" data-step="1">
                     <h4>1. L'URL di Partenza</h4>
-                    <p>Tutto inizia qui. L'utente inserisce il link (URL) che desidera analizzare. Questo indirizzo è la
-                        nostra bussola per trovare i dati sul web.</p>
-                </div>
-                <div class="arch-detail-item">
+                    <p>Tutto inizia qui: l'indirizzo che hai inserito. È la bussola per trovare i dati sul web.</p>
+                    <pre class="live-data" data-field="url"></pre>
+                </article>
+                <article class="arch-detail-item live-step" data-step="2">
                     <h4>2. Il Recupero (Fetch)</h4>
-                    <p>Il server agisce come un browser invisibile: va all'indirizzo indicato e scarica l'intero codice
-                        HTML. È come scattare una foto di tutto il codice che compone la pagina.</p>
-                </div>
-                <div class="arch-detail-item">
+                    <p>Il server agisce come un browser invisibile: scarica l'intero codice HTML della
+                        pagina. Ecco i primi caratteri di quello che ha ricevuto davvero.</p>
+                    <pre class="live-data" data-field="html"></pre>
+                </article>
+                <article class="arch-detail-item live-step" data-step="3">
                     <h4>3. La Pulizia (Sanitization)</h4>
-                    <p>Una pagina web è piena di "rumore": pubblicità, menu e stili. Usiamo Regex per estrarre solo il
-                        testo leggibile. Per motivi di performance e costi, il testo viene limitato a un massimo di
-                        <strong>4000 caratteri</strong>.
-                    </p>
-                </div>
-                <div class="arch-detail-item">
+                    <p>Via script, stili e tag: resta solo il testo leggibile, poi troncato per contenere
+                        costi e tempi. <strong>Attenzione a cosa compare qui</strong>: se la pagina
+                        nascondeva del testo agli occhi umani, a questo punto è in chiaro come tutto il resto.</p>
+                    <pre class="live-data" data-field="cleaned"></pre>
+                </article>
+                <article class="arch-detail-item live-step" data-step="4">
                     <h4>4. La Preparazione (Prompting)</h4>
-                    <p>Il testo pulito viene inserito in una "cornice" di istruzioni con l'obiettivo di riassumerlo. Il
-                        <strong>Prompt</strong>
-                        inviato al backend è:
-                        <br>
-                        <code
-                            class="code-block">"You are a helpful assistant that summarizes the content of a webpage provided by the user. Do not include any meta-talk, just the summary."</code>
-                    </p>
-                </div>
-                <div class="arch-detail-item">
+                    <p>Il testo viene incollato dentro il messaggio dell'utente, subito dopo la nostra
+                        richiesta. Da qui in poi istruzioni e dati sono un unico flusso indistinto: è
+                        esattamente questa saldatura a rendere possibile la prompt injection.</p>
+                    <pre class="live-data" data-field="prompt"></pre>
+                </article>
+                <article class="arch-detail-item live-step" data-step="5">
                     <h4>5. L'IA in Azione</h4>
-                    <p>Il pacchetto completo (istruzioni + testo) viene inviato via API a un modello di linguaggio
-                        avanzato (LLM). L'IA interpreta il contenuto e genera la risposta che vedi a schermo.</p>
-                </div>
+                    <p>Il pacchetto completo parte verso il modello, che risponde. Confronta la sua
+                        risposta con il testo del passo 3: ha riassunto la pagina, o ha obbedito a
+                        qualcosa che c'era scritto dentro?</p>
+                    <pre class="live-data" data-field="summary"></pre>
+                </article>
             </div>
         </section>
 

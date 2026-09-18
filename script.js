@@ -4,7 +4,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultSection = document.getElementById('result-section');
     const summaryContent = document.getElementById('summary-content');
     const summaryModel = document.getElementById('summary-model');
-    const defendedContent = document.getElementById('defended-content');
+    const pipelineHint = document.getElementById('pipeline-hint');
+    const liveSteps = [...document.querySelectorAll('.live-step')];
+    const archBlocks = [...document.querySelectorAll('.arch-block')];
     const loader = document.getElementById('loader');
     const copyBtn = document.getElementById('copy-btn');
     const loaderStep = document.getElementById('loader-step');
@@ -33,8 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const PHASES = [
         '🌐 Scarico la pagina web...',
         '🧹 Ripulisco l\'HTML ed estraggo il testo leggibile...',
-        '🔓 Primo giro: riassunto con il prompt ingenuo...',
-        '🔒 Secondo giro: stesso modello, prompt blindato...'
+        '📝 Preparo il prompt da inviare al modello...',
+        '🤖 Il modello sta leggendo e scrivendo il riassunto...'
     ];
     const SECONDS_PER_PHASE = 3;
     const SLOW_AFTER_SECONDS = 20;
@@ -63,6 +65,50 @@ document.addEventListener('DOMContentLoaded', () => {
     function stopProgress() {
         clearInterval(progressTimer);
         progressTimer = null;
+    }
+
+    // --- Pipeline passo per passo ---
+    // I dati mostrati sono quelli veri restituiti dal backend. Il backend però
+    // risponde in un colpo solo: la pausa fra un passo e l'altro serve a rendere
+    // leggibile il percorso, non misura il tempo di ciascuna fase.
+    const PAUSA_FRA_PASSI = 900;
+
+    function resetPipeline() {
+        liveSteps.forEach((step) => {
+            step.classList.remove('visible');
+            step.querySelector('.live-data').textContent = '';
+        });
+        archBlocks.forEach((block) => block.classList.remove('done'));
+        pipelineHint.classList.remove('hidden');
+    }
+
+    function mostraPasso(numero, contenuto) {
+        const step = liveSteps[numero - 1];
+        step.querySelector('.live-data').textContent = contenuto;
+        step.classList.add('visible');
+        archBlocks[numero - 1]?.classList.add('done');
+        step.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+
+    async function animaPipeline(data) {
+        const s = data.steps;
+        const troncatura = s.truncated ? `, troncati a ${s.maxLength}` : '';
+
+        const contenuti = [
+            s.url,
+            `${s.htmlLength} caratteri di HTML scaricati. I primi 1200:\n\n${s.htmlSnippet}`,
+            `${s.cleanedLength} caratteri di testo leggibile${troncatura}:\n\n${s.cleanedText}`,
+            s.prompt.map((m) => `[${m.role}]\n${m.content}`).join('\n\n'),
+            `Ha risposto: ${data.model}\n\n${data.summary}`
+        ];
+
+        pipelineHint.classList.add('hidden');
+        for (let i = 0; i < contenuti.length; i++) {
+            mostraPasso(i + 1, contenuti[i]);
+            if (i < contenuti.length - 1) {
+                await new Promise((resolve) => setTimeout(resolve, PAUSA_FRA_PASSI));
+            }
+        }
     }
 
     function showError(message, isModelError) {
@@ -97,9 +143,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset UI
         resultSection.classList.add('hidden');
         errorSection.classList.add('hidden');
+        resetPipeline();
         loader.classList.remove('hidden');
         summarizeBtn.disabled = true;
         startProgress();
+
+        let datiPipeline = null;
 
         try {
             const response = await fetch('/api/summarize', {
@@ -119,26 +168,26 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             summaryModel.textContent = `Generato da: ${data.model}`;
-            summaryContent.textContent = data.naive;
-            // La seconda chiamata può fallire per conto suo: in quel caso mostriamo
-            // il motivo nella colonna, senza far saltare tutto il riassunto.
-            defendedContent.textContent = data.defended
-                || `Questa metà del confronto non è arrivata: ${data.defendedError}`;
-            resultSection.classList.remove('hidden');
+            summaryContent.textContent = data.summary;
+            datiPipeline = data;
         } catch (error) {
             showError(error.message, error.isModelError === true);
         } finally {
             stopProgress();
             loader.classList.add('hidden');
-            summarizeBtn.disabled = false;
         }
+
+        // La pipeline si popola dopo la risposta, poi compare il riassunto in cima.
+        if (datiPipeline) {
+            await animaPipeline(datiPipeline);
+            resultSection.classList.remove('hidden');
+        }
+        summarizeBtn.disabled = false;
     });
 
 
     copyBtn.addEventListener('click', () => {
-        const text = `${summaryModel.textContent}\n\n`
-            + `--- PROMPT INGENUO ---\n${summaryContent.textContent}\n\n`
-            + `--- PROMPT BLINDATO ---\n${defendedContent.textContent}`;
+        const text = summaryContent.textContent;
         navigator.clipboard.writeText(text).then(() => {
             const originalIcon = copyBtn.innerHTML;
             copyBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';

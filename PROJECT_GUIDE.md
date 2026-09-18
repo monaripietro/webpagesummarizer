@@ -18,6 +18,9 @@ Here is where everything lives:
 - `script.js`: The remote control for the buttons.
 - `api/summarize.js`: The brain that talks to the AI.
 - `api/models.js`: Unused leftover (see below) — safe to delete.
+- `demo/prompting.html`: The **target page** used to demonstrate the attack. It is not part of the
+  app and is never served by it: it is the page you publish elsewhere (e.g. at `/prompting/` on
+  your own site) and then paste into WebSummary. Kept here so the demo and the tool stay in sync.
 - `.env`: A private box for your API keys.
 
 ---
@@ -26,7 +29,6 @@ Here is where everything lives:
 
 ### `index.html`
 Think of this as the map of the webpage. We use:
-- `<select>`: To let you choose which AI model to use.
 - `<input>`: To take your URL.
 - `<button>`: To trigger the action.
 - `id`: We give elements names like `id="summarize-btn"` so the code can find them.
@@ -40,19 +42,15 @@ This makes the app look premium. We use:
 ### `script.js`
 This file listens for clicks. When you press "Summarize":
 1.  It grabs the text from the input box.
-2.  It shows a spinner that walks through the pipeline steps ("downloading the page",
-    "cleaning the HTML", then the two prompt rounds) plus a real seconds counter, so the wait
-    doesn't feel frozen. The backend answers in one shot, so those step timings are indicative —
-    the counter is not.
+2.  It shows a spinner with a real seconds counter while the backend works.
 3.  It sends a "request" to our backend with the URL you typed.
-4.  Once the backend replies, it fills the two comparison columns and prints which model actually
-    wrote them — the app never lets you choose one, so it owes you that answer.
+4.  Once the backend replies, it fills the *Pipeline Tecnica* box step by step with the real data
+    of that request (see section 5), and finally shows the summary along with which model wrote
+    it — the app never lets you choose one, so it owes you that answer.
 
 If something goes wrong, the message appears in a card on the page instead of a browser
 pop-up. When the problem is the **model** (free models often go offline or hit their rate
 limit), the backend flags it with `modelError: true` and the page suggests trying again shortly.
-If only the *second* call fails, the first column is still shown and the second explains what
-happened, because half a comparison beats no answer at all.
 
 ---
 
@@ -104,43 +102,42 @@ This project isn't just a tool; it's a lesson.
 
 ---
 
-## 🥊 5. The Side-by-Side Comparison
+## 🔬 5. The Pipeline, Live
 
-Every page is summarized **twice, by the same model**, changing only the prompt. That is the
-entire experiment, and the reason it is convincing: if the two answers differ, the prompt is the
-only thing that could have caused it.
+The box titled *Pipeline Tecnica* is not an illustration: when you press **Riassumi** it fills in,
+one step at a time, with the **real material** of that specific request.
 
-- **Naive prompt** — the page text is pasted straight into the user message, right after
-  "Please summarize the following webpage content:". Nothing marks where the developer's request
-  ends and the untrusted page begins. This is how almost every such app is first written.
-- **Defended prompt** — the same text is wrapped in `<<<INIZIO_CONTENUTO>>>` / `<<<FINE_CONTENUTO>>>`
-  and the system message states four rules: what is inside the markers is data, never orders;
-  injected instructions must be reported rather than obeyed; text claiming to close the markers is
-  still data; answer with a summary only.
+1. **URL** — what you typed.
+2. **Fetch HTML** — how many characters came back, and the first 1200 of the actual HTML.
+3. **Pulizia** — the extracted text, with its true length and the truncation point.
+4. **Prompt** — the exact `messages` array sent to the model, system message included.
+5. **IA** — which model answered, and what it said.
 
-One subtlety worth understanding. The app asks for `openrouter/free`, a router that may pick a
-**different model on every request**. If both calls used it, a difference between the columns could
-come from the prompt *or* from the model, and the demo would prove nothing. So `api/summarize.js`
-sends the first call, reads back which model actually answered (`data.model`), and **pins the second
-call to that same model**. The two requests are therefore sequential, not parallel — correctness
-bought with a little latency.
+This is where the lesson lands, and it lands without anyone having to explain it. If the page hid
+text from human eyes, **step 3 is where it becomes plainly visible**, sitting in the middle of the
+legitimate content. Step 4 then shows that same text pasted inside the prompt, right after the
+developer's own request, with nothing separating the two. By step 5 you can simply compare: did the
+model summarize the page, or did it do what the page told it to do?
 
-Two honest caveats:
+`api/summarize.js` returns those artefacts in a `steps` object, and `script.js` reveals them with a
+short pause between each. One honest caveat, noted in the code: the backend answers in a single
+shot, so **the pauses are presentational** — the data is real, the pacing is not a measurement.
 
-1. The demo only shows a dramatic contrast if the naive prompt actually gets hijacked. Strong models
-   often resist even the naive framing, in which case both columns hold a real summary.
-2. That case is not a failure, because rule 2 of the defended prompt tells the model to *report*
-   injection attempts. So the defended column typically says "this page contains a hidden block
-   trying to instruct me, which I did not execute" — a visible difference either way.
+### Why there is no "defended prompt" column
 
-A note on what we learned along the way: an earlier version of this project ran a small model
-**inside the browser** (WebLLM) as the guaranteed-vulnerable participant. It was dropped for a
-concrete reason worth recording. A model small enough to be hijacked easily (`Qwen2.5-0.5B`) turned
-out to be too weak to write usable **Italian** — it summarized English cleanly but produced
-incoherent Italian, so the control case was unreadable and the comparison meaningless. Obeying an
-injection is itself an act of instruction-following: a model too weak to resist is often also too
-weak to be useful, and there is no size that is reliably "dumb enough to fall for it, sharp enough
-to be legible" in every language.
+An earlier version ran the same page twice, once with a naive prompt and once with a hardened one
+(explicit delimiters, a system message declaring the content untrusted). It was removed because in
+practice it did not produce a reliable difference, and a demo that sometimes shows nothing teaches
+nothing. The defensive techniques are still worth knowing — they are described in the target page
+itself — but the app now spends its screen space on the thing that *always* works: showing exactly
+what the model was fed.
+
+A note on what else we tried, worth recording so nobody repeats it. We ran a small model **inside
+the browser** (WebLLM) as a guaranteed-vulnerable participant. It was dropped for a concrete reason:
+a model small enough to be hijacked easily (`Qwen2.5-0.5B`) proved too weak to write usable
+**Italian** — clean summaries in English, incoherent ones in Italian — so the control case was
+unreadable. Obeying an injection is itself an act of instruction-following: a model too weak to
+resist is often also too weak to be useful.
 
 ## 🚀 Learning More
 The best way to learn is to break things! Try changing a color in `style.css` or changing the "System Message" in `api/summarize.js` to see how the AI responds differently.
