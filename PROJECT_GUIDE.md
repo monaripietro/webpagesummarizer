@@ -17,6 +17,7 @@ Here is where everything lives:
 - `style.css`: The "makeup" and layout.
 - `script.js`: The remote control for the buttons.
 - `api/summarize.js`: The brain that talks to the AI.
+- `api/models.js`: The scout that asks OpenRouter which free models exist today.
 - `.env`: A private box for your API keys.
 
 ---
@@ -39,9 +40,16 @@ This makes the app look premium. We use:
 ### `script.js`
 This file listens for clicks. When you press "Summarize":
 1.  It grabs the text from the input box.
-2.  It shows a "Loading" spinner.
+2.  It shows a spinner that walks through the pipeline steps ("downloading the page",
+    "cleaning the HTML", ...) plus a real seconds counter, so the wait doesn't feel frozen.
+    The backend answers in one shot, so those step timings are indicative — the counter is not.
 3.  It sends a "request" to our backend with the URL you typed.
 4.  Once the backend replies, it puts the result on the screen.
+
+If something goes wrong, the message appears in a card on the page instead of a browser
+pop-up. When the problem is the **model** (free models often go offline or hit their rate
+limit), the backend flags it with `modelError: true` and the page adds a hint telling you to
+pick a different model or fall back to `CASUALE`.
 
 ---
 
@@ -55,6 +63,21 @@ This is written in **Node.js**. When it receives a URL:
 2.  **Cleaning**: it removes messy code (like HTML tags) to keep only the readable text.
 3.  **Chatting**: It sends that text to **OpenRouter** (which connects us to models like GPT or Gemma).
 4.  **Returning**: It sends the AI's summary back to your browser.
+
+### `api/models.js`
+The list of *free* models on OpenRouter changes often: models appear, disappear, or stop
+responding. Writing that list by hand inside `index.html` means the app slowly fills up with
+dead options.
+
+So instead we **ask OpenRouter directly**:
+1.  It calls `https://openrouter.ai/api/v1/models` (a public endpoint — no API key needed).
+2.  It keeps only the free ones (their `id` ends with `:free`).
+3.  It remembers the answer for 1 hour (a **cache**), so we don't re-ask on every page load.
+4.  `script.js` uses that list to fill the dropdown when the page opens.
+
+The dropdown also keeps one fixed option, `openrouter/free`. That is OpenRouter's own
+"router": it picks an available free model for you. It is the safety net — if the model list
+can't be loaded, the app still works.
 
 ---
 

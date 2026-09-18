@@ -157,6 +157,11 @@ select:focus {
     border-color: var(--primary);
 }
 
+.model-status {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
 .input-group {
     display: flex;
     gap: 1rem;
@@ -205,8 +210,32 @@ button:active {
 }
 
 .result-section.hidden,
+.error-section.hidden,
+.error-hint.hidden,
 .loader.hidden {
     display: none;
+}
+
+.error-title {
+    color: #fca5a5;
+    margin-bottom: 1rem;
+}
+
+.error-message {
+    color: var(--text-main);
+    line-height: 1.6;
+    word-break: break-word;
+}
+
+.error-hint {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-left: 3px solid #fbbf24;
+    background: rgba(251, 191, 36, 0.08);
+    border-radius: 8px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    font-size: 0.9rem;
 }
 
 .result-header {
@@ -364,6 +393,19 @@ button:active {
     flex-direction: column;
     align-items: center;
     gap: 1rem;
+}
+
+.loader-step {
+    font-size: 1.05rem;
+    text-align: center;
+    min-height: 1.6em;
+    transition: opacity 0.2s;
+}
+
+.loader-time {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
 }
 
 .spinner {

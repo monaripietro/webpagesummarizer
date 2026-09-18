@@ -4,7 +4,7 @@ WebSummary is a lightweight, portable web application designed to demonstrate th
 
 ## 🚀 Features
 
-- **Multi-Model Support**: Choose between several free LLMs (Gemma 3, Mistral Small, GPT-OSS, Nemotron).
+- **Multi-Model Support**: The free-model list is fetched live from OpenRouter, so the dropdown never offers models that no longer exist. A `CASUALE` option (`openrouter/free`) lets OpenRouter pick an available free model for you.
 - **Glassmorphism UI**: A modern, premium aesthetic built with vanilla HTML, CSS, and JS.
 - **Serverless Backend**: Powered by Vercel Serverless Functions for secure API key handling.
 - **Educational Note**: Includes a built-in explanation of how prompt injection works in the context of web scraping.

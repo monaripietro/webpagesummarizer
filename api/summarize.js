@@ -9,7 +9,8 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'URL is required' });
   }
 
-  const selectedModel = model || "google/gemini-2.0-flash-001";
+  // Se il frontend non indica un modello, lasciamo che OpenRouter ne scelga uno gratuito.
+  const selectedModel = model || "openrouter/free";
 
   // Check if API key is present
   const apiKey = process.env.OPENROUTER_API_KEY;
@@ -78,6 +79,9 @@ export default async function handler(req, res) {
       })
     });
 
+    // Se il modello scelto non risponde (spento, sovraccarico, rate limit...) lo
+    // segnaliamo con il flag "modelError", così il frontend può suggerire di
+    // provarne un altro invece di mostrare un errore generico.
     if (!openRouterResponse.ok) {
       let errorMessage = openRouterResponse.statusText;
       try {
@@ -86,11 +90,22 @@ export default async function handler(req, res) {
       } catch (e) {
         // Fallback to status text if JSON parsing fails
       }
-      throw new Error(`OpenRouter Error: ${errorMessage}`);
+      return res.status(502).json({
+        error: `Il modello "${selectedModel}" non ha risposto: ${errorMessage}`,
+        modelError: true
+      });
     }
 
     const data = await openRouterResponse.json();
-    const summary = data.choices[0].message.content;
+    const summary = data.choices?.[0]?.message?.content;
+
+    // Alcuni modelli gratuiti rispondono "ok" ma senza contenuto.
+    if (!summary) {
+      return res.status(502).json({
+        error: `Il modello "${selectedModel}" ha restituito una risposta vuota.`,
+        modelError: true
+      });
+    }
 
     // Construct the messages array to show the user what was sent
     const fullPrompt = [

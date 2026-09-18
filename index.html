@@ -28,15 +28,11 @@
             <div class="model-select-wrapper">
                 <label for="model-select">Scegli il Modello:</label>
                 <select id="model-select">
+                    <!-- Router di OpenRouter: sceglie da solo un modello gratuito disponibile.
+                         Gli altri modelli vengono aggiunti da script.js chiamando /api/models. -->
                     <option value="openrouter/free">CASUALE (Gratis)</option>
-                    <option value="z-ai/glm-4.5-air:free">Z-AI: GLM-4.5 Air (Gratis)</option>
-                    <option value="openai/gpt-oss-20b:free">OpenAI: GPT-OSS 20B (Gratis)</option>
-                    <option value="openai/gpt-oss-120b:free">OpenAI: GPT-OSS 120B (Gratis)</option>
-                    <option value="qwen/qwen3-4b:free">Qwen: Qwen 3 4B (Gratis)</option>
-                    <option value="google/gemma-3-4b-it:free">Google: Gemma 3 4B IT (Gratis)</option>
-                    <option value="google/gemma-3-27b-it:free">Google: Gemma 3 27B IT (Gratis)</option>
-                    <option value="nvidia/nemotron-3-nano-30b-a3b:free">Nvidia: Nemotron 3 Nano (Gratis)</option>
                 </select>
+                <p id="model-status" class="model-status">Caricamento dei modelli disponibili...</p>
             </div>
             <div class="input-group">
                 <input type="url" id="url-input" placeholder="https://esempio.it" required>
@@ -47,7 +43,18 @@
 
         <section id="loader" class="loader hidden">
             <div class="spinner"></div>
-            <p>Analisi del contenuto della pagina in corso...</p>
+            <p id="loader-step" class="loader-step">Scarico la pagina web...</p>
+            <p id="loader-time" class="loader-time">0s</p>
+        </section>
+
+        <section id="error-section" class="glass-card error-section hidden">
+            <h3 class="error-title">⚠️ Non è stato possibile creare il riassunto</h3>
+            <p id="error-message" class="error-message"></p>
+            <p id="error-hint" class="error-hint hidden">
+                Il modello selezionato al momento non risponde: è normale con i modelli gratuiti.
+                Prova a sceglierne un altro dal menu, oppure usa l'opzione <strong>CASUALE</strong>,
+                che lascia a OpenRouter il compito di trovarne uno disponibile.
+            </p>
         </section>
 
         <section id="result-section" class="glass-card result-section hidden">
