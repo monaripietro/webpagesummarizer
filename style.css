@@ -157,9 +157,11 @@ select:focus {
     border-color: var(--primary);
 }
 
-.model-status {
-    font-size: 0.8rem;
+.model-note {
+    font-size: 0.85rem;
     color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
 }
 
 .input-group {

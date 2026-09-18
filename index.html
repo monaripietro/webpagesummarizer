@@ -36,11 +36,6 @@
                 davvero rispondendo in questo momento: quelli spenti non te li proponiamo nemmeno.
             </p>
 
-            <div class="modal-status">
-                <div id="intro-spinner" class="spinner spinner-small"></div>
-                <p id="intro-status">Controllo dei modelli in corso...</p>
-            </div>
-
             <div class="local-offer">
                 <p class="local-offer-title">Vuoi vedere il confronto?</p>
                 <p>
@@ -56,7 +51,7 @@
                 <p id="intro-local-status" class="local-status"></p>
             </div>
 
-            <button id="intro-btn" disabled>Ho capito, provo</button>
+            <button id="intro-btn">Ho capito, provo</button>
         </div>
     </div>
 
@@ -67,15 +62,10 @@
         </header>
 
         <section class="glass-card input-section">
-            <div class="model-select-wrapper">
-                <label for="model-select">Scegli il Modello:</label>
-                <select id="model-select">
-                    <!-- Router di OpenRouter: sceglie da solo un modello gratuito disponibile.
-                         Gli altri modelli vengono aggiunti da script.js chiamando /api/models. -->
-                    <option value="openrouter/free">CASUALE (Gratis)</option>
-                </select>
-                <p id="model-status" class="model-status">Caricamento dei modelli disponibili...</p>
-            </div>
+            <p class="model-note">
+                Il modello viene scelto da OpenRouter tra quelli gratuiti disponibili al momento.
+                Quale abbia risposto te lo diciamo insieme al riassunto.
+            </p>
             <div class="input-group">
                 <input type="url" id="url-input" placeholder="https://esempio.it" required>
                 <button id="summarize-btn">Riassumi</button>

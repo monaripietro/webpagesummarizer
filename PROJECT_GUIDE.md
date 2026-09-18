@@ -17,7 +17,7 @@ Here is where everything lives:
 - `style.css`: The "makeup" and layout.
 - `script.js`: The remote control for the buttons.
 - `api/summarize.js`: The brain that talks to the AI.
-- `api/models.js`: The scout that asks OpenRouter which free models exist today.
+- `api/models.js`: Unused leftover (see below) — safe to delete.
 - `.env`: A private box for your API keys.
 
 ---
@@ -65,32 +65,19 @@ This is written in **Node.js**. When it receives a URL:
 3.  **Chatting**: It sends that text to **OpenRouter** (which connects us to models like GPT or Gemma).
 4.  **Returning**: It sends the AI's summary back to your browser.
 
-### `api/models.js`
-The list of *free* models on OpenRouter changes often: models appear, disappear, or stop
-responding. Writing that list by hand inside `index.html` means the app slowly fills up with
-dead options.
+### Which model answers?
+There is no model picker. The app always asks for `openrouter/free`, which is not a model but a
+**router**: OpenRouter itself chooses a free model that is currently up, and handles the fallback
+when one goes offline. That removes a whole class of problems — free models appear and disappear
+constantly, and a hand-maintained list rots within weeks.
 
-Worse: being *listed* as free doesn't mean a model actually answers. Many free models have
-**no provider serving them** — pick one and you get "No endpoints found".
+Choosing for the user only works if you then tell them what was chosen, so the reply carries the
+real model id (`data.model`) and the page prints it above the summary.
 
-So instead we **ask OpenRouter directly**:
-1.  It calls `https://openrouter.ai/api/v1/models` (a public endpoint — no API key needed).
-2.  It keeps only the free ones (their `id` ends with `:free`).
-3.  For each one, it asks `/api/v1/models/<model>/endpoints`: who is actually serving it right
-    now? Each provider reports a `status` (negative = in trouble) and an `uptime`. A model with
-    zero healthy providers gets dropped before the user can ever select it.
-4.  It sorts what's left by how many healthy providers it has, so the sturdiest models come first.
-5.  It remembers the answer for 1 hour (a **cache**), so we don't re-ask on every page load.
-6.  `script.js` uses that list to fill the dropdown when the page opens.
-
-Two things worth noticing about step 3. First, those are **metadata** calls: they cost no tokens
-and don't eat into your free daily quota, unlike actually sending a test prompt to 22 models.
-Second, the checks run with `Promise.all`, all at once — so the whole scan takes as long as the
-single slowest check (a fraction of a second), not the sum of all of them.
-
-The dropdown also keeps one fixed option, `openrouter/free`. That is OpenRouter's own
-"router": it picks an available free model for you. It is the safety net — if the model list
-can't be loaded, the app still works.
+> `api/models.js` is a leftover from an earlier design that built a health-checked dropdown.
+> Nothing calls it any more. It is kept only because it is a nice worked example of querying
+> `/api/v1/models/<model>/endpoints` to see which providers are actually serving a model — feel
+> free to delete it.
 
 ---
 
@@ -129,10 +116,16 @@ not out of robustness, but because they can't follow complex instructions at all
 incoherent text. `Qwen2.5-0.5B` sits in the useful middle: capable enough to write a real summary,
 not trained hard enough to refuse a hijack.
 
-The practical consequence: an injection phrased as a polite override ("ignore your guidelines...")
-is ignored by small models *and* refused by large ones. An injection that **fakes a turn in the
-conversation** ("--- FINE CONTENUTO --- / User: ... / Assistant:") reliably hijacks the small model,
-because it attacks the chat format rather than the model's reasoning.
+Three things had to be right before the demo became legible, all measured on the real page:
+
+1. **Fake a turn in the conversation.** A polite override ("ignore your guidelines...") is ignored
+   by small models *and* refused by large ones. Simulating the end of the content and a new
+   user/assistant exchange attacks the chat *format* instead of the model's reasoning.
+2. **Repeat it.** A single injection drowning in 4000 characters of real content gets ignored
+   (1 hijack in 5 attempts). Repeated three times: 5 in 5.
+3. **Cap the generation.** This was the real culprit behind unreadable output: without `max_tokens`
+   the small model keeps writing past its answer and mangles it. With `max_tokens: 120` and
+   `temperature: 0` it answers with the marker alone, identically every time.
 
 The download is always opt-in: 276 MB is a lot on a slow connection or a weak laptop, so the app
 offers it in the welcome pop-up and again in a card on the page, and works perfectly without it.

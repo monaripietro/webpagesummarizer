@@ -1,21 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
     const urlInput = document.getElementById('url-input');
-    const modelSelect = document.getElementById('model-select');
     const summarizeBtn = document.getElementById('summarize-btn');
     const resultSection = document.getElementById('result-section');
     const summaryContent = document.getElementById('summary-content');
     const summaryModel = document.getElementById('summary-model');
     const loader = document.getElementById('loader');
     const copyBtn = document.getElementById('copy-btn');
-    const modelStatus = document.getElementById('model-status');
     const loaderStep = document.getElementById('loader-step');
     const loaderTime = document.getElementById('loader-time');
     const errorSection = document.getElementById('error-section');
     const errorMessage = document.getElementById('error-message');
     const errorHint = document.getElementById('error-hint');
     const introModal = document.getElementById('intro-modal');
-    const introStatus = document.getElementById('intro-status');
-    const introSpinner = document.getElementById('intro-spinner');
     const introBtn = document.getElementById('intro-btn');
 
     // --- Modello locale (gira nel browser, via WebLLM) ---
@@ -93,18 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     localBtn.addEventListener('click', startLocalDownload);
     introLocalBtn.addEventListener('click', startLocalDownload);
 
-    // Sblocca il pulsante del pop-up. Viene chiamata sia in caso di successo
-    // sia in caso di errore: l'utente non deve mai restare bloccato fuori dall'app.
-    function unlockIntro(message) {
-        introStatus.textContent = message;
-        introSpinner.classList.add('hidden');
-        introBtn.disabled = false;
-    }
-
     function closeIntro() {
-        if (introBtn.disabled) {
-            return;
-        }
         introModal.classList.add('hidden');
     }
 
@@ -114,39 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
             closeIntro();
         }
     });
-
-    // Chiede al backend quali modelli gratuiti stanno rispondendo ora e li
-    // aggiunge al menu a tendina. Il backend ha già scartato quelli irraggiungibili.
-    async function loadFreeModels() {
-        try {
-            const response = await fetch('/api/models');
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Errore nel caricamento dei modelli');
-            }
-
-            data.models.forEach((model) => {
-                const option = document.createElement('option');
-                option.value = model.id;
-                option.textContent = model.name;
-                modelSelect.appendChild(option);
-            });
-
-            const riepilogo = `${data.models.length} modelli gratuiti attivi`
-                + (data.discarded ? ` (${data.discarded} scartati perché non raggiungibili)` : '');
-
-            modelStatus.textContent = `${riepilogo}.`;
-            unlockIntro(`Pronto: ${riepilogo}.`);
-        } catch (error) {
-            // Se la lista non arriva, l'opzione "CASUALE" resta comunque utilizzabile.
-            const fallback = 'Lista modelli non disponibile: puoi usare l\'opzione CASUALE.';
-            modelStatus.textContent = fallback;
-            unlockIntro(fallback);
-        }
-    }
-
-    loadFreeModels();
 
     // Le fasi seguono la pipeline descritta più in basso nella pagina.
     // Il backend risponde in un colpo solo, quindi i tempi sono indicativi:
@@ -195,7 +147,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     summarizeBtn.addEventListener('click', async () => {
         let url = urlInput.value.trim();
-        const model = modelSelect.value;
+        // Router di OpenRouter: sceglie da solo un modello gratuito disponibile.
+        const model = 'openrouter/free';
         let promptDaConfrontare = null;
 
         if (!url) {
@@ -265,7 +218,14 @@ document.addEventListener('DOMContentLoaded', () => {
         localColumn.classList.remove('hidden');
         localContent.textContent = 'Elaborazione in corso nel tuo browser...';
         try {
-            const reply = await localEngine.chat.completions.create({ messages });
+            // Senza questi due limiti il modello piccolo continua a generare oltre la
+            // risposta e la impasta, rendendo illeggibile l'esito dell'injection.
+            // temperature 0 lo rende anche ripetibile davanti a una classe.
+            const reply = await localEngine.chat.completions.create({
+                messages,
+                max_tokens: 120,
+                temperature: 0
+            });
             localContent.textContent = reply.choices[0].message.content;
         } catch (error) {
             localContent.textContent = `Il modello locale non è riuscito a rispondere: ${error.message}`;

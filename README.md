@@ -4,8 +4,8 @@ WebSummary is a lightweight, portable web application designed to demonstrate th
 
 ## 🚀 Features
 
-- **Multi-Model Support**: The free-model list is fetched live from OpenRouter and **health-checked** — models with no provider serving them are dropped before they reach the dropdown, so you don't pick one that can't answer. A `CASUALE` option (`openrouter/free`) lets OpenRouter pick an available free model for you.
-- **Welcome Screen**: A short intro explains the prompt-injection lesson while the health check runs; the "Ho capito, provo" button unlocks when the models are ready.
+- **No model picking**: the app always asks `openrouter/free`, OpenRouter's own router, which selects a free model that is actually up. The answer reports **which model really replied**, so nothing is hidden.
+- **Welcome Screen**: A short intro explains the prompt-injection lesson before you start.
 - **Local Model Comparison**: Optionally download a small model (`Qwen2.5-0.5B-Instruct`, 276 MB) that runs **in the browser** via WebLLM/WebGPU, and see it answer the *same prompt* side by side with the remote model. The small one gets hijacked by injected instructions; the large one usually doesn't. The download is never automatic — it is offered in the welcome pop-up and again on the page, so low-powered machines can skip it.
 - **Glassmorphism UI**: A modern, premium aesthetic built with vanilla HTML, CSS, and JS.
 - **Serverless Backend**: Powered by Vercel Serverless Functions for secure API key handling.
