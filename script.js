@@ -111,6 +111,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Il prompt è lungo: di default il riquadro resta basso, e da qui lo si apre
+    // per intero o lo si copia per riprovarlo altrove.
+    const promptBox = document.querySelector('.live-step[data-step="4"] .live-data');
+    const promptToggle = document.getElementById('prompt-toggle');
+    const promptCopy = document.getElementById('prompt-copy');
+
+    promptToggle.addEventListener('click', () => {
+        const aperto = promptBox.classList.toggle('expanded');
+        promptToggle.textContent = aperto ? 'Riduci' : 'Mostra tutto';
+        promptToggle.setAttribute('aria-expanded', String(aperto));
+    });
+
+    promptCopy.addEventListener('click', () => {
+        navigator.clipboard.writeText(promptBox.textContent).then(() => {
+            promptCopy.textContent = 'Copiato';
+            setTimeout(() => { promptCopy.textContent = 'Copia il prompt'; }, 2000);
+        });
+    });
+
     function showError(message, isModelError) {
         errorMessage.textContent = message;
         errorHint.classList.toggle('hidden', !isModelError);

@@ -364,19 +364,6 @@ button:active {
     border-left-color: var(--glass-border);
 }
 
-.arch-snippet {
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 0.7rem;
-    background: rgba(0, 0, 0, 0.4);
-    padding: 0.4rem 0.6rem;
-    border-radius: 6px;
-    color: #a5b4fc;
-    width: 100%;
-    overflow-x: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    margin-top: auto;
-}
 
 .arch-details {
     margin-top: 3rem;
@@ -554,4 +541,97 @@ footer {
 
 .arch-block.done .arch-icon {
     background: rgba(99, 102, 241, 0.3);
+}
+
+/* Barra strumenti del riquadro prompt */
+.live-tip {
+    font-size: 0.85rem !important;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: 0.8rem;
+}
+
+.live-toolbar {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.6rem;
+}
+
+.tool-btn {
+    background: transparent;
+    border: 1px solid var(--primary);
+    color: #c7d2fe;
+    border-radius: 8px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.tool-btn:hover {
+    background: rgba(99, 102, 241, 0.15);
+}
+
+.live-data.expanded {
+    max-height: none;
+}
+
+/* Menu di navigazione fra le pagine */
+.menu {
+    margin-top: 1.2rem;
+}
+
+.menu a,
+.menu-link {
+    color: #a5b4fc;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(165, 180, 252, 0.35);
+    padding-bottom: 2px;
+}
+
+.menu a:hover,
+.menu-link:hover {
+    color: #c7d2fe;
+    border-bottom-color: #c7d2fe;
+}
+
+/* Pagina di approfondimento */
+.case-intro {
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+}
+
+.case-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.2rem;
+    padding: 0.8rem 1rem;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+}
+
+.case-tag {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.case-meta code {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.85rem;
+    color: #a5b4fc;
+    word-break: break-all;
+}
+
+.live-data.highlight {
+    border-left-color: #fbbf24;
+    color: #fde68a;
+    font-size: 0.9rem;
 }

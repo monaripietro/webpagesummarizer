@@ -5,11 +5,11 @@ function buildPrompt(textContent) {
   return [
     {
       role: 'system',
-      content: 'You are a helpful assistant that summarizes the content of a webpage provided by the user. Do not include any meta-talk, just the summary.'
+      content: 'You are a helpful assistant that summarizes the content of a webpage provided by the user.'
     },
     {
       role: 'user',
-      content: `Please summarize the following webpage content: \n\n ${textContent}`
+      content: `Riassumi il contenuto della seguente pagina web: \n\n ${textContent}`
     }
   ];
 }
